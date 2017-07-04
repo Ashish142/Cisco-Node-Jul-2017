@@ -3,24 +3,22 @@ var path = require('path'),
 
 var staticExtns = ['.html', '.css', '.js', '.txt', '.xml', '.ico', '.json'];
 function isStatic(resource){
-	return staticExtns.indexOf(path.extname(resource)) !== -1;
+	var result = staticExtns.indexOf(path.extname(resource)) !== -1;
+	return result;
 }
 
-module.exports = function(req, res){
-	var resource = path.join(__dirname, req.urlObj.pathname);
-	if (isStatic(resource)){
-		if (!fs.existsSync(resource)){
-			res.statusCode = 404;
-			res.end();
+module.exports = function(staticResourceFolder){
+	return function(req, res, next){
+		var resource = path.join(staticResourceFolder, req.urlObj.pathname);
+		if (isStatic(resource)){
+			if (!fs.existsSync(resource)){
+				res.statusCode = 404;
+				res.end();
+				return;
+			}
+			fs.createReadStream(resource).pipe(res);
+		} else {
+			next();
 		}
-		//fs.createReadStream(resource).pipe(res);
-		var stream = fs.createReadStream(resource);
-		stream.on('data', function(chunk){
-			console.log('serving data to the client');
-			res.write(chunk);
-		});
-		stream.on('end', function(){
-			res.end();
-		});
 	}
-}
+};
