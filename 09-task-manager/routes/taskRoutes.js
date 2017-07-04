@@ -22,7 +22,7 @@ router.post('/new', function(req, res, next){
 	var taskName = req.body.txtTask,
 		newTaskId = taskList.reduce(function(result, task){
 			return result > task.id ? result : task.id;
-		},0);
+		},0)+1;
 	var newTask = {
 		id : newTaskId,
 		name : taskName,
@@ -30,6 +30,17 @@ router.post('/new', function(req, res, next){
 	};
 	taskList.push(newTask);
 	res.redirect('/tasks');
-})
+});
+
+router.get('/toggle/:id', function(req, res, next){
+	var taskId = parseInt(req.params.id),
+		task = taskList.filter(function(t){
+			return t.id === taskId;
+		})[0];
+	if (task){
+		task.isCompleted = !task.isCompleted;
+	}
+	res.redirect('/tasks');
+});
 
 module.exports = router;
